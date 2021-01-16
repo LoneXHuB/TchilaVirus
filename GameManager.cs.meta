@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: abc17ab2be1f9d0468cae9b0c9eba0ca
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - virusP: {fileID: 1363323276034089144, guid: 036219b3ee2a7684381b55b1e5638d8d,
+      type: 3}
+  - virusLP: {fileID: 1363323276034089144, guid: b56b92e36df7927458fd42756f3c20bc,
+      type: 3}
+  - whiteCellP: {fileID: 1363323276034089144, guid: e5273aa200a4e8a449f51dc9d1a27264,
+      type: 3}
+  - whiteCellLP: {fileID: 1363323276034089144, guid: 9c5edf6bf2a43484aab05831f941820d,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
