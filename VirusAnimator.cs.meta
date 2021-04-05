@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 112b42c46b0a06246b6cbb15b8e14091
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - spriteShape: {instanceID: 0}
+  - internals: {instanceID: 0}
+  - animator: {instanceID: 0}
+  - audio: {instanceID: 0}
+  - deathClip: {fileID: 8300000, guid: fce0752fd6b7a7e4c90853762c8518aa, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,76 +1,175 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using TMPro;
+using Photon.Pun;
+using ExitGames.Client.Photon;
+using Photon.Realtime;
 
-public class GameManager : MonoBehaviour
+namespace LoneX.TchilaVirus
 {
-    public static GameManager instance;
+public class GameManager : MonoBehaviourPunCallbacks
+{
+    #region fields
+        private int shieldCount = 0;
+        public TMP_Text scoreText;
+        public TMP_Text CenterText;
+        public float maxGameTimer;
+        public float gameTimer;
+        public int score;
+        public static GameManager instance;
+        public static bool isGameover = false;
 
-    public static Dictionary<int, PlayerManager> players = new Dictionary<int, PlayerManager>();
+    #endregion
 
-    public GameObject virusP;
-    public GameObject virusLP;
-    public GameObject whiteCellP;
-    public GameObject whiteCellLP;
-    public GameObject wheel;
-    public GameObject world;
-
-    public void Awake()
-    {
-        if (instance == null)
+    #region MonoBehaviour Callbacks
+        private void Start()
         {
-            instance = this;
+            InitializeRoomProperties();
         }
-        else if (instance != this)
+        private void Awake()
         {
-            Debug.Log("Instance already exists ! ");
-            Destroy(this);
-        }
-    }
-
-    public void SpawnPlayer(int _id , string _username , Vector2 _position , Quaternion _rotation, int _team , float _health)
-    {
-        GameObject _player = null;
-        Debug.Log($"player team = {_team}");
-        Debug.Log($"virus == {(int)Team.Virus}");
-        Debug.Log($"White == {(int)Team.White}");
-
-        if (_id == Client.instance.myId)
-        {
-            if (_team == (int)Team.Virus)
-                _player = Instantiate(virusLP, _position, _rotation);
-            else if (_team == (int)Team.White)
-                _player = Instantiate(whiteCellLP, _position, _rotation);
+            if(instance == null)
+                instance = this;
             else
-            {
-                Debug.Log("Somthing horrible happened ( unexisting team assinged in GameManager.SpawPlayer())");
-                return;
-            }
-
+                Destroy(this);
         }
-        else
+
+        public override void OnEnable()
         {
-            if (_team == (int)Team.Virus)
-                _player = Instantiate(virusP, _position, _rotation);
-            else if (_team == (int)Team.White)
-                _player = Instantiate(whiteCellP, _position, _rotation);
-            else
+            base.OnEnable();
+            
+            CenterText.gameObject.SetActive(false);
+         
+            CountdownTimer.OnCountdownTimerHasExpired += OnCountdownTimerHasExpired;
+         
+            isGameover= false;
+         
+            if(PhotonNetwork.IsMasterClient)
             {
-                Debug.Log("Somthing horrible happened ( unexisting team assinged in GameManager.SpawPlayer())");
-                return;
+                CountdownTimer.SetStartTime();
             }
         }
 
-        _player.GetComponent<PlayerManager>().InitializePlayer(_id, _username, (Team)_team, _health);
+         public override void OnDisable()
+        {
+            base.OnDisable();
+            CountdownTimer.OnCountdownTimerHasExpired -= OnCountdownTimerHasExpired;
+        }
+    #endregion
+    
 
-        players.Add(_id, _player.GetComponent<PlayerManager>());
-    }
+    #region CountDownTimer Callbacks
+        public void OnCountdownTimerHasExpired()
+        {
+            if(!PhotonNetwork.InRoom)
+            return;
 
-    public void SpawnWheel(int _id , Vector2 _position , Quaternion _rotation)
-    {
-        GameObject _wheel = Instantiate(wheel, _position, _rotation);
-        Debug.Log($"Wheel {_id} spawned!");
-        _wheel.gameObject.transform.parent = world.transform;
+            DisplayGameOverText();
+        }
+        #endregion
 
-    }
+        #region Photon Callbacks
+       
+        public override void OnJoinedRoom()
+        {
+            
+            Debug.Log("OnJoinedRoom called in Game Manager");
+            if(PhotonNetwork.CurrentRoom.CustomProperties["ShieldCount"] != null 
+            && PhotonNetwork.CurrentRoom.CustomProperties["gameTimer"] != null
+            && PhotonNetwork.CurrentRoom.CustomProperties["score"] != null)
+            {
+                gameTimer = float.Parse(PhotonNetwork.CurrentRoom.CustomProperties["gameTimer"].ToString());
+            
+                shieldCount = int.Parse(PhotonNetwork.CurrentRoom.CustomProperties["ShieldCount"].ToString());
+
+                score = int.Parse(PhotonNetwork.CurrentRoom.CustomProperties["score"].ToString());
+                scoreText.text = $"{score}/{shieldCount}";
+            }else
+                RoomManager.instance.LeaveRoom();
+            
+        }
+
+        public override void  OnRoomPropertiesUpdate(Hashtable _propertiesThatChanged)
+        {
+            if( _propertiesThatChanged["score"] != null && _propertiesThatChanged["ShieldCount"] != null)
+            {
+                score = int.Parse(_propertiesThatChanged["score"].ToString());
+                shieldCount = int.Parse(_propertiesThatChanged["ShieldCount"].ToString());
+                scoreText.text = $"{score}/{shieldCount}";
+            }
+        }
+    #endregion
+
+    #region LocalMethods
+        public void DisplayGameOverText()
+        {
+            isGameover = true;
+            CenterText.gameObject.SetActive(true);
+            
+            PlayerManager _player = RoomManager.instance.myplayer.GetComponent<PlayerManager>();
+
+            if(PlayerWon(_player))
+                CenterText.text = "Mission Acomplished !";
+            else
+                CenterText.text = "Mission Failed !";
+        }
+
+        public bool PlayerWon(PlayerManager _player)
+        {
+            if(_player.team == Team.Virus)
+                if(score < shieldCount)
+                {
+                   return false;
+                }
+                else 
+                {
+                   return true;
+                }
+            else 
+                if(score < shieldCount)
+                {
+                   return true;
+                }
+                else 
+                {
+                   return false;
+                }
+        }
+        public void InitializeRoomProperties()
+        {
+            if(PhotonNetwork.IsMasterClient)
+            {
+                gameTimer = maxGameTimer;
+                shieldCount = ShieldsManager.instance.transform.childCount;
+                Hashtable _timeProp = new Hashtable {{"gameTimer", gameTimer} , {"ShieldCount" , shieldCount},{"score" , score}};
+                
+                InitScoreText();
+
+                PhotonNetwork.CurrentRoom.SetCustomProperties(_timeProp);
+            }
+        }
+        public void UpdateScore()
+        {
+            if(!isGameover)
+            {    
+                score++;
+                scoreText.text = $"{score}/{shieldCount}";
+                Hashtable _scoreProp = new Hashtable {{"score", score}};
+                
+                if(score >= shieldCount)
+                    DisplayGameOverText();
+
+                PhotonNetwork.CurrentRoom.SetCustomProperties(_scoreProp);
+            }
+        }
+        public void InitScoreText()
+        {
+            if(scoreText != null)
+                scoreText.text = $"{score}/{shieldCount}";
+        }
+        
+    #endregion
+
+
+}
+
 }
