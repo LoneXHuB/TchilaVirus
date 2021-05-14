@@ -38,7 +38,6 @@ public class SoftBody : MonoBehaviour
     private void UpdateVerticies()
     {
         //iterate all points except the center one
-
         for (int i = 0; i < points.Length - 1; i++)
         {
             Vector2 _centerPoint = Vector2.zero;
@@ -56,7 +55,7 @@ public class SoftBody : MonoBehaviour
             }
             catch
             {
-                Debug.Log("sline points too close recalculating...");
+                //Debug.Log("sline points too close recalculating...");
                 spriteShape.spline.SetPosition(i, (_vertex - _towardsCenter * (_colliderRadius + 0.5f)));
             }
             
@@ -79,7 +78,7 @@ public class SoftBody : MonoBehaviour
         float _v3 = (points[6].position - points[3].position).magnitude;
         float _v4 = (points[6].position - points[4].position).magnitude;
         float _v5 = (points[6].position - points[5].position).magnitude;
-       
+
         float _shrinkEnumerator = Mathf.Min(_v0,_v1,_v2,_v3,_v4,_v5);
         
         float _shrinkFactor = _shrinkEnumerator / shrinkDenumerator;

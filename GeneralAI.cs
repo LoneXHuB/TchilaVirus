@@ -5,7 +5,7 @@ using Photon.Pun;
 
 namespace LoneX.TchilaVirus
 {
-    public enum AIState  { OnDuty , Threatened , Curious , Chasing}
+    public enum AIState  { OnDuty , Threatened , Curious , Chasing , SeekingRefuge}
     public class GeneralAI : MonoBehaviourPun
     {
         public Transform target;
@@ -17,8 +17,9 @@ namespace LoneX.TchilaVirus
         public float fleeDistance = 15f;
         public Transform fleeTarget;
         public float minAttackDistance = 10f;
-        public PhotonView photonView;
-
+        public bool isInsideShield = false;
+        public Transform exitVector;
+        Transform refugeShield;
         Transform enemyPosition;
         Transform foundPickable;
         Transform closeShieldPosition;
@@ -42,55 +43,40 @@ namespace LoneX.TchilaVirus
             if(team == Team.White)
                 minAttackDistance *= 2f;
                 
-            if(PhotonNetwork.IsMasterClient);
+            if(PhotonNetwork.IsMasterClient)
                 InvokeRepeating("UpdatePath", 0f , .5f);
         }
 
         private void FindRedShieldTarget()
         {
-            if(target != null)
+            if(!GameManager.isGameover)
             {
-                if(team == Team.White)
+                int _randomShieldNumber = 0;
+                if(target != null)
                 {
-                    int[] _currentTarget = {target.GetSiblingIndex()};
-                    int _randomShieldIndex = GetRandomExcluding(_currentTarget);
-                    target = ShieldsManager.instance.transform.GetChild(_randomShieldIndex);
-                    return;
+                    ShieldController _targetShield = target.gameObject.GetComponent<ShieldController>();
+                       if(!_targetShield.isActivated && team == Team.Virus)
+                            return;
+                            
+                    _randomShieldNumber =  GetRandomExcept(target.GetSiblingIndex());
                 }
-
-                bool _isTargetActivated = target.gameObject.GetComponent<ShieldController>().isActivated;
+                else _randomShieldNumber = GetRandomExcept(-1);
                 
-                if(!_isTargetActivated)
-                    return;
+                target = ShieldsManager.instance.transform.GetChild(_randomShieldNumber);
             }
-
-            int _randomShieldNumber = GetRandomExcluding(activatedShields);
-            target = ShieldsManager.instance.transform.GetChild(_randomShieldNumber);
         }
 
-        private int GetRandomExcluding(Int32[] _exclusions)
+        private int GetRandomExcept(int _exception)
         {
-            
-            bool _found = false;
-            int _randInt = UnityEngine.Random.Range(0 , ShieldsManager.instance.transform.childCount);
-            if(team == Team.Virus)
+            int _randomShieldNumber =  UnityEngine.Random.Range(0 , ShieldsManager.instance.transform.childCount);
+            if(team == Team.White)
             {
-                while(!_found)
-                {
-                    _found = true;
-
-                    foreach(Int32 _excluded in activatedShields)
-                    {
-                        if(_excluded == _randInt)
-                        {
-                            _found = false;
-                            break;
-                        }
-                    }
-                }
+                if(_randomShieldNumber == _exception)
+                    return GetRandomExcept(_exception);
+                else
+                    return _randomShieldNumber;
             }
-
-            return _randInt;
+            else return _randomShieldNumber;
         }
 
         private void UpdatePath()
@@ -100,7 +86,12 @@ namespace LoneX.TchilaVirus
             if(seeker.IsDone() && ! aiPlayerManager.isDead)
             {
                 if(stateMachine == AIState.OnDuty)
-                    seeker.StartPath(this.transform.position , target.position , OnPathComplete);
+                   {
+                       ShieldController _targetShield = target.gameObject.GetComponent<ShieldController>();
+                       if(_targetShield.isActivated && team == Team.Virus)
+                            FindRedShieldTarget();
+                        seeker.StartPath(this.transform.position , target.position , OnPathComplete);
+                   }
                 else
                     seeker.StartPath(this.transform.position , secondaryTarget.position , OnPathComplete);
             }
@@ -113,15 +104,16 @@ namespace LoneX.TchilaVirus
                 path = _path;
                 currentWayPoint = 0;
             }
-            else
+            else    
                 Debug.Log("Error calculating path");
         }
 
         private void FixedUpdate()
         {
+
             if(!PhotonNetwork.IsMasterClient)
                 return;
-            if(aiPlayerManager.isDead)
+            if(aiPlayerManager.isDead || GameManager.isGameover)
                 {
                     controller.MoveAI(Vector2.zero);
                     return;
@@ -133,8 +125,11 @@ namespace LoneX.TchilaVirus
         public void AnalyseEnvironement()
         {
             fleeVector = Vector2.zero;
+            stateMachine = AIState.OnDuty;
             if(radar == null)
                 return;
+
+            int _index = 0;
 
             foreach(Collider2D _detectedEntity in radar.detectedEntities)
             {
@@ -175,8 +170,6 @@ namespace LoneX.TchilaVirus
                         
                         if(Vector2.Distance(this.transform.position , _player.transform.position) <= minAttackDistance)
                             {
-                                Debug.Log("EnemyToo Close // PANICK! ");
-                
                                 try
                                 {
                                     Pickable _ability0 = aiPlayerManager.abilities[0];
@@ -196,22 +189,45 @@ namespace LoneX.TchilaVirus
                 {
                     closeShieldPosition = _shield.transform;
                     if(this.team == Team.White && (target == closeShieldPosition))
-                       {
-                            FindRedShieldTarget();
-                            Debug.Log("too close to shield changing target !");
-                       }
+                    {
+                        FindRedShieldTarget();
+                        //Debug.Log("too close to shield changing target !");
+                    }
+                    else if(this.team == Team.Virus && stateMachine == AIState.Threatened)
+                    {
+                        if(stateMachine == AIState.Threatened)
+                        {
+                            stateMachine = AIState.SeekingRefuge;
+                            refugeShield = closeShieldPosition;
+                            //Debug.Log("Virus is seeking refuge");
+                        }
+                        else stateMachine = AIState.OnDuty;
+
+                    }
                 }
+
+                radar.detectedEntities[_index] = null;
+                _index++;
             }
 
             fleeTarget.position = this.transform.position + fleeVector.normalized * fleeDistance; 
         }
+
         private void StateDependentPathCorrection()
         {
             switch (stateMachine)
             {
                 case AIState.OnDuty :
+                    
+                    if(reachedEndOfPath)
+                        break;
+
                     int _lastWayPoint = path.vectorPath.Count - 1;
-                    path.vectorPath[_lastWayPoint - 1] = target.GetChild(0).position;
+                    try
+                    {
+                        path.vectorPath[_lastWayPoint - 1] = target.GetChild(0).position;
+                    }
+                    catch { return; }
                     
                     Vector2 _entryHelper0 = target.GetChild(1).position;
                     Vector2 _entryHelper1 = target.GetChild(2).position;
@@ -226,7 +242,24 @@ namespace LoneX.TchilaVirus
                         else
                             path.vectorPath[_lastWayPoint - 2] = _entryHelper1;
                     }
+                     if(isInsideShield)
+                    {
+                        Vector2 _exitHelper0 = exitVector.position;
+                        Vector2 _exitHelper1 = exitVector.position;
 
+                        _helper0Dist = Vector2.Distance(this.transform.position , _exitHelper0);
+                        _helper1Dist = Vector2.Distance(this.transform.position , _exitHelper1);
+                        if(currentWayPoint < 2)
+                        {
+                            path.vectorPath[1] = exitVector.position;
+                            if(Mathf.Min(_helper0Dist,_helper1Dist) == _helper0Dist)
+                                path.vectorPath[2] = _exitHelper0;
+                            else
+                                path.vectorPath[2] = _exitHelper1;
+                        }
+                        if(Vector3.Distance(this.transform.position , exitVector.position) < nextWayPointDistance)
+                            isInsideShield =false;
+                    }
                     break;
                 case AIState.Threatened :
                     _lastWayPoint = path.vectorPath.Count - 1;
@@ -236,13 +269,14 @@ namespace LoneX.TchilaVirus
                     fleeVector += new Vector3(_hit.normal.x , _hit.normal.y , 0f);
                     
                     break;
-
                 default : break;
             }
         }
 
         private void ExecuteStateBehaviour()
         {
+            //Debug.Log($"team : {team} \n stateMachine : {stateMachine}");
+
             switch (stateMachine)
             {
                 case AIState.OnDuty :
@@ -266,7 +300,9 @@ namespace LoneX.TchilaVirus
                 case AIState.Chasing : 
                     secondaryTarget = enemyPosition;
                     break;
-
+                case AIState.SeekingRefuge :
+                    secondaryTarget = closeShieldPosition;
+                    break;
                 default : break;
             }
         }
@@ -279,7 +315,6 @@ namespace LoneX.TchilaVirus
             if(currentWayPoint >= path.vectorPath.Count)
             {
                 reachedEndOfPath = true;
-                stateMachine = AIState.OnDuty;
                 return;
             }
             else
@@ -298,12 +333,6 @@ namespace LoneX.TchilaVirus
             {
                 currentWayPoint++;
             }   
-            
-        }
-
-        public void OnThreatenedBehaviour()
-        {
-
         }
     }
 }

@@ -21,10 +21,12 @@ public class GameManager : MonoBehaviourPunCallbacks
     #endregion
 
     #region MonoBehaviour Callbacks
+        
         private void Start()
         {
             InitializeRoomProperties();
         }
+
         private void Awake()
         {
             if(instance == null)
@@ -49,7 +51,7 @@ public class GameManager : MonoBehaviourPunCallbacks
             }
         }
 
-         public override void OnDisable()
+        public override void OnDisable()
         {
             base.OnDisable();
             CountdownTimer.OnCountdownTimerHasExpired -= OnCountdownTimerHasExpired;
@@ -65,14 +67,13 @@ public class GameManager : MonoBehaviourPunCallbacks
 
             DisplayGameOverText();
         }
-        #endregion
+    #endregion
 
-        #region Photon Callbacks
+    #region Photon Callbacks
        
         public override void OnJoinedRoom()
         {
-            
-            Debug.Log("OnJoinedRoom called in Game Manager");
+            //Debug.Log("OnJoinedRoom called in Game Manager");
             if(PhotonNetwork.CurrentRoom.CustomProperties["ShieldCount"] != null 
             && PhotonNetwork.CurrentRoom.CustomProperties["gameTimer"] != null
             && PhotonNetwork.CurrentRoom.CustomProperties["score"] != null)

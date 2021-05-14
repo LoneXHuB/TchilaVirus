@@ -17,12 +17,12 @@ public class UsernameInput : MonoBehaviour
     {
         if (string.IsNullOrEmpty(value))
         {
-            Debug.Log("username null or empty");
+            //Debug.Log("username null or empty");
             return;
         }
 
         PhotonNetwork.NickName = value;
-        Debug.Log($"username  : {value}");
+        //Debug.Log($"username  : {value}");
 
         PlayerPrefs.SetString(playerNamePrefKey, value);
     }
@@ -35,7 +35,7 @@ public class UsernameInput : MonoBehaviour
     {
         string _oldUsername = string.Empty;
         TMP_InputField _inputfield = this.GetComponent<TMP_InputField>();
-
+        
         if (_inputfield!=null)
         {
             if(PlayerPrefs.HasKey(playerNamePrefKey))

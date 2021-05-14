@@ -52,7 +52,6 @@ namespace LoneX.TchilaVirus
         {
             animator.SetTrigger("Activated");
             minimapTagAnimator.SetTrigger("Activated");
-            Debug.Log("Shield Activated");
             isActivated = true;
             GameManager.instance.UpdateScore();
 

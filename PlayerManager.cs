@@ -48,7 +48,11 @@ namespace LoneX.TchilaVirus
             
             radar = Instantiate(radar , this.transform.position , Quaternion.identity);
             radar.SetActive(true);
-            radar.GetComponent<Radar>().targetTeam = this.team;
+            if(team == Team.Virus)
+                radar.GetComponent<Radar>().targetTeam = Team.White;
+            else
+                radar.GetComponent<Radar>().targetTeam = Team.Virus;
+            
         }
 
         private void Start()
@@ -136,7 +140,7 @@ namespace LoneX.TchilaVirus
                     if (this.team == Team.Virus && _otherPlayer.team == Team.White)
                     {
                         ChangeHealthBy(-10f);
-                        Debug.Log($"Health == {health}");
+                        //Debug.Log($"Health == {health}");
                     }
 
                     return;
@@ -175,7 +179,7 @@ namespace LoneX.TchilaVirus
             isDead = true;
             animator.Die(false);
             radar.gameObject.SetActive(false);
-            Debug.Log($"{PhotonNetwork.LocalPlayer.NickName} died y'all");
+            //Debug.Log($"{PhotonNetwork.LocalPlayer.NickName} died y'all");
         }
 
         public void AddAbility (Pickable _pickable)
@@ -183,7 +187,7 @@ namespace LoneX.TchilaVirus
             if(abilities.Count < 2 && photonView.IsMine)
             {
                 abilities.Add(_pickable);
-                Debug.Log($"your player has picked a pcikable of type {_pickable.pickableType}");
+                //Debug.Log($"your player has picked a pcikable of type {_pickable.pickableType}");
                 HUD.instance.UpdatePickedItems(abilities);
             }
         }
@@ -203,11 +207,11 @@ namespace LoneX.TchilaVirus
             {
                 case PickableType.Magnesium :
                     photonView.RPC("ActivateMagnet", RpcTarget.All);
-                    Debug.Log("used magnesium!");
+                    //Debug.Log("used magnesium!");
                     break;
                 case PickableType.Sulfur : 
                     photonView.RPC("ShootMultidirectional", RpcTarget.All);
-                    Debug.Log("used Sulfur");
+                    //Debug.Log("used Sulfur");
                     break;
                 case PickableType.Glucose : 
                     photonView.RPC("GoFast", RpcTarget.All);
@@ -222,7 +226,7 @@ namespace LoneX.TchilaVirus
                     }
                     break;
                 default :
-                    Debug.Log("Uknown ability");
+                    //Debug.Log("Uknown ability");
                     break;
             }
 

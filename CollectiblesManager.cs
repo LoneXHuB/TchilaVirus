@@ -17,7 +17,7 @@ namespace LoneX.TchilaVirus
         
         public static void AddPickable(Pickable _pickable , bool _state)
         {
-            Debug.Log($"{_pickable.Id} added");
+            //Debug.Log($"{_pickable.Id} added");
             PickableTable.Add(_pickable.Id , _state);
             pickables.Add(_pickable.Id , _pickable);
             PhotonNetwork.CurrentRoom.SetCustomProperties(PickableTable);

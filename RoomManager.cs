@@ -33,22 +33,24 @@ namespace LoneX.TchilaVirus
         #region Monobehaviour callbacks
         private void Start()
         {
-                Debug.LogFormat("We are Instantiating LocalPlayer from {0}", SceneManager.GetActiveScene().name);
+                //Debug.LogFormat("We are Instantiating LocalPlayer from {0}", SceneManager.GetActiveScene().name);
             //we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate
             Team team;
             if(PhotonNetwork.LocalPlayer != null)
             team = (Team)PhotonNetwork.LocalPlayer.CustomProperties["Team"];
-            else return; 
+            else return;
             
             myplayer = Spawner.instance.SpawnPlayer(team);
-
             if(PhotonNetwork.IsMasterClient)
             {
-                Spawner.instance.SpawnAI(Team.Virus);
-                Spawner.instance.SpawnAI(Team.White);
-                Spawner.instance.SpawnAI(Team.Virus);
-                Spawner.instance.SpawnAI(Team.White);
-                Spawner.instance.SpawnAI(Team.White);
+                for (int i = 0; i < BotCountInput.BotCount; i++)
+                {
+                    //Debug.Log("Spawning Bot");
+                    if(i % 2 == 0)
+                        Spawner.instance.SpawnAI(Team.Virus);
+                    else
+                        Spawner.instance.SpawnAI(Team.White);
+                }
             }
         }
 
@@ -75,7 +77,7 @@ namespace LoneX.TchilaVirus
 
             myplayer = Spawner.instance.SpawnPlayer(team);
             
-            Debug.Log($"respawned {team} player!");
+            //Debug.Log($"respawned {team} player!");
         }
         #endregion
 
@@ -85,11 +87,11 @@ namespace LoneX.TchilaVirus
         {
             if (!PhotonNetwork.IsMasterClient)
             {
-                Debug.LogError("PhotonNetwork : Trying to Load a level but we are not the master Client");
+                //Debug.LogError("PhotonNetwork : Trying to Load a level but we are not the master Client");
                 return;
             }
             
-            Debug.LogFormat("PhotonNetwork : Loading Level : {0}", PhotonNetwork.CurrentRoom.PlayerCount);
+            //Debug.LogFormat("PhotonNetwork : Loading Level : {0}", PhotonNetwork.CurrentRoom.PlayerCount);
             PhotonNetwork.LoadLevel("Room for 1");
         }
 

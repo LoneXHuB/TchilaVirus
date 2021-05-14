@@ -24,7 +24,7 @@ namespace LoneX.TchilaVirus
                 if(_otherPlayer.team == targetTeam)
                 {
                     _otherPlayer.ChangeHealthBy( - 10f); 
-                    Debug.Log($"projectile hit player of team {_otherPlayer.team}");
+                    //Debug.Log($"projectile hit player of team {_otherPlayer.team}");
                 }
             }
             

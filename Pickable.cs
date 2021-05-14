@@ -55,7 +55,7 @@ namespace LoneX.TchilaVirus {
         {
             if(isPicked)
             {
-                Debug.Log($"Pickable id : {Id} picked ! ");
+                //Debug.Log($"Pickable id : {Id} picked ! ");
                 StartCoroutine(ReActivatePickableIn(reactivationTime));
             }
 
@@ -70,7 +70,7 @@ namespace LoneX.TchilaVirus {
             pickableCollider.enabled = !isPicked;
             animator.SetBool("isPicked", isPicked);
             CollectiblesManager.UpdateItemState(this);
-            Debug.Log($"Regenarted pickable{this.Id}");
+            //Debug.Log($"Regenarted pickable{this.Id}");
         }
     }
 }

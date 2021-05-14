@@ -9,7 +9,7 @@ namespace LoneX.TchilaVirus
         public WarningSign warning;
         public Team targetTeam;
         public Collider2D[] detectedEntities;
-        public Collider2D collider;
+        public new Collider2D collider;
 
         
          void Awake()
@@ -25,7 +25,6 @@ namespace LoneX.TchilaVirus
             {
                 if(_detectedPlayer.team == targetTeam)
                 {   
-                    Debug.Log("Radar Trigger entered! ");
                     float _distance = (this.transform.position - _detectedPlayer.transform.position).magnitude;
                     warning.gameObject.SetActive(true);
                 }
@@ -34,7 +33,7 @@ namespace LoneX.TchilaVirus
 
         public void OnTriggerStay2D(Collider2D _other)
         {
-            detectedEntities = new Collider2D[10];
+            detectedEntities = new Collider2D[5];
             Physics2D.GetContacts(this.collider , detectedEntities);
             PlayerManager _detectedPlayer = _other.GetComponentInParent<PlayerManager>();
 

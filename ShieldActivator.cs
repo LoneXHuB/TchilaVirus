@@ -21,9 +21,16 @@ namespace LoneX.TchilaVirus
                     {
                         ShieldController shield = GetComponentInParent<ShieldController>();
                         //i 
-                        if (_player.team == Team.Virus && !shield.isActivated)
+                        if (_player.team == Team.Virus )
                         {
-                           GetComponentInParent<ShieldController>().photonView.RPC("ActivateShield" , Photon.Pun.RpcTarget.AllBuffered);
+                            GeneralAI _aiPlayer = _other.GetComponentInParent<GeneralAI>();
+                            if(_aiPlayer != null)
+                            {
+                                _aiPlayer.isInsideShield = true;
+                                _aiPlayer.exitVector = transform.parent.GetChild(0);
+                            }
+                            if(!shield.isActivated)
+                                GetComponentInParent<ShieldController>().photonView.RPC("ActivateShield" , Photon.Pun.RpcTarget.AllBuffered);
                         }
 
                         return;

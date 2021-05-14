@@ -67,14 +67,18 @@ namespace LoneX.TchilaVirus
                 this.transform.position = this.transform.position + new Vector3(movement.x , movement.y , 0f).normalized * 0.25f;
                 return;
             }
+
+            float _xAxis = SimpleInput.GetAxisRaw("Horizontal");
+            float _yAxis = SimpleInput.GetAxisRaw("Vertical");
+            Vector2 _movementInput = new Vector2(_xAxis , _yAxis);
             
+            if(_movementInput.magnitude == 0f && !isAI)
+            {       
+                return;
+            }
+
             for (int i = 0; i < rigidPoint.Length-1; i++)
             {
-                //TODO change to a test to see if the joystick is being activated
-                if(movement.magnitude < 8f )
-                {       
-                    return;
-                }
                 if(Vector2.Dot(rigidPoint[i].velocity , movement) != 1 && Vector2.Dot(rigidPoint[i].velocity , movement) != 0f )
                 {
                     rigidPoint[i].velocity = Vector2.zero;
