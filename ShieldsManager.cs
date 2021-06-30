@@ -6,23 +6,22 @@ using Photon.Pun;
 
 namespace LoneX.TchilaVirus
 {
-public class ShieldsManager : MonoBehaviourPun
-{
-    public static ShieldsManager instance;
-    public int score;
-
-    private void Awake()
+    public class ShieldsManager : MonoBehaviourPun
     {
-        if(instance == null)
-            instance = this;
-        else
-            Destroy(this);
-    }
+        public static ShieldsManager instance;
+        public int score;
 
-    public void UpdateScore(int _score)
-    {
-        score = _score;
-    }
-}
+        private void Awake()
+        {
+            if(instance == null)
+                instance = this;
+            else
+                Destroy(this);
+        }
 
+        public void UpdateScore(int _score)
+        {
+            score = _score;
+        }
+    }
 }

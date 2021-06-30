@@ -8,7 +8,7 @@ using TMPro;
 public class UsernameInput : MonoBehaviour
 {
     #region Constants
-    const string playerNamePrefKey = "PlayerName";
+    public const string playerNamePrefKey = "PlayerName";
     #endregion
 
     #region public methods

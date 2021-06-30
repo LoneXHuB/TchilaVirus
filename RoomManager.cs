@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using Photon.Pun;
 using Photon.Realtime;
@@ -37,13 +38,14 @@ namespace LoneX.TchilaVirus
             //we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate
             Team team;
             if(PhotonNetwork.LocalPlayer != null)
-            team = (Team)PhotonNetwork.LocalPlayer.CustomProperties["Team"];
+            team = (Team)PhotonNetwork.LocalPlayer.CustomProperties[Launcher.TEAM_KEY];
             else return;
             
+            int _botCount = Int32.Parse(PhotonNetwork.CurrentRoom.CustomProperties[Launcher.BOT_COUNT_KEY].ToString());
             myplayer = Spawner.instance.SpawnPlayer(team);
             if(PhotonNetwork.IsMasterClient)
             {
-                for (int i = 0; i < BotCountInput.BotCount; i++)
+                for (int i = 0; i < _botCount; i++)
                 {
                     //Debug.Log("Spawning Bot");
                     if(i % 2 == 0)
@@ -73,7 +75,7 @@ namespace LoneX.TchilaVirus
         public void Respawn()
         {  
             PhotonNetwork.Destroy(myplayer);
-            Team team = (Team)PhotonNetwork.LocalPlayer.CustomProperties["Team"];
+            Team team = (Team)PhotonNetwork.LocalPlayer.CustomProperties[Launcher.TEAM_KEY];
 
             myplayer = Spawner.instance.SpawnPlayer(team);
             
