@@ -15,7 +15,7 @@ namespace LoneX.TchilaVirus
         public Team team;
         public bool isDead;
         public bool isInvincible;
-        
+        public bool IsInvincible{get{return isInvincible;} set{animator.SetShield( value); isInvincible = value;}}
         public AudioSource audioSource;
         public AudioClip[] bounce;
         public VirusAnimator animator;
@@ -28,18 +28,19 @@ namespace LoneX.TchilaVirus
         public float speedFactor;
         public GameObject virusDouble;
         public bool isDuplicated = false;
-        public GameObject shieldEffectSprite;
         public GameObject radar;
         public GameObject magnet;
         public GameObject projectile;
         public int projectileCount;
         public float projectileRadius;
         public float projectileSpeed;
+        public AudioClip projectileShotClip;
         private float nextTrailSpriteTimer = 0.25f;
         public float nextTrailSpriteMaxTimer = 0.25f;
         public float immunityTime = 6f;
         public float magnetTime = 5;
-
+        public AudioClip magnetActivated;
+        public AudioClip goFastClip;
        
         private void Awake()
         {
@@ -124,7 +125,8 @@ namespace LoneX.TchilaVirus
                     }
                 }
                 int rand = UnityEngine.Random.Range(0,3);
-                PlaySound(bounce[rand]);
+                if(!audioSource.isPlaying)
+                    PlaySound(bounce[rand]);
             }
         }
 
@@ -167,7 +169,6 @@ namespace LoneX.TchilaVirus
         
         private void PlaySound(AudioClip _clip)
         {
-            if(!audioSource.isPlaying)
                 audioSource.PlayOneShot(_clip);
         }
         
@@ -203,7 +204,7 @@ namespace LoneX.TchilaVirus
 
          public void UseAbbility(Pickable _ability)
          {
-             switch(_ability.pickableType)
+            switch(_ability.pickableType)
             {
                 case PickableType.Magnesium :
                     photonView.RPC("ActivateMagnet", RpcTarget.All);
@@ -241,6 +242,8 @@ namespace LoneX.TchilaVirus
             
             isFast = true;
             virusController.isFast = true;
+            animator.GlowOnce();
+            PlaySound(goFastClip);
             nextTrailSpriteTimer = nextTrailSpriteMaxTimer;
             StartCoroutine(StopTrailEffectIn(maxFastTime));
          }
@@ -248,9 +251,9 @@ namespace LoneX.TchilaVirus
          [PunRPC]
          public void MakeImmune()
          {
-             isInvincible = true;
-             shieldEffectSprite.SetActive(true);
-             StartCoroutine(MakeImmuneEndIn(immunityTime));
+            IsInvincible = true;
+            animator.GlowOnce();
+            StartCoroutine(MakeImmuneEndIn(immunityTime));
          }
 
          [PunRPC]
@@ -260,6 +263,7 @@ namespace LoneX.TchilaVirus
             float _angle = 0f;
 
             animator.Shoot();
+            audioSource.PlayOneShot(projectileShotClip);
 
             for (int i = 0; i <= projectileCount; i++)
             {
@@ -283,6 +287,8 @@ namespace LoneX.TchilaVirus
              if(this.team == Team.White)
              {
                 magnet.SetActive(true);
+                PlaySound(magnetActivated);
+                animator.Glow();
                 StartCoroutine(DeactivateMagnet(magnetTime));
              }
          }
@@ -293,22 +299,23 @@ namespace LoneX.TchilaVirus
              if(team == Team.Virus)
              {
                 isDuplicated = true;
+                animator.GlowOnce();
                 virusController.CreateVirusDouble();
              }
          }
          
          public IEnumerator MakeImmuneEndIn(float _delay)
          {
-             yield return new WaitForSeconds(_delay);
-             isInvincible = false;
-             shieldEffectSprite.SetActive(false);
-
+            yield return new WaitForSeconds(_delay);
+            IsInvincible = false;
          }
          public IEnumerator DeactivateMagnet(float _delay)
          {
              if(this.team == Team.White)
              {
                  yield return new WaitForSeconds(_delay);
+                 animator.StopGlow();
+                 yield return new WaitForSeconds(0.2f);
                  magnet.SetActive(false);
              }
          }

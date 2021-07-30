@@ -13,23 +13,20 @@ namespace LoneX.TchilaVirus
         #endregion
 
         #region MonoBehaviourCallbacks
-            // Start is called before the first frame update
-            void Start()
-            {
-                
-            }
-
-            // Update is called once per frame
-            void Update()
-            {
-                
-            }
         #endregion
 
         #region OtherCallbacks
         #endregion
 
         #region PublicMeths
+        public void SetActiveToFalse()
+        {
+            this.gameObject.SetActive(false);
+        }
+        public void SetActiveToTrue()
+        {
+            this.gameObject.SetActive(true);
+        }
         #endregion
 
         #region PrivateMeths

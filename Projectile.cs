@@ -10,6 +10,8 @@ namespace LoneX.TchilaVirus
         public Rigidbody2D rigid;
         public SpriteRenderer spriteRenderer;
         public Team targetTeam;
+        public AudioSource source;
+        public AudioClip particleExplodeClip;
         public void Awake()
         {
             Destroy(this.gameObject , 3f);
@@ -37,6 +39,7 @@ namespace LoneX.TchilaVirus
             Destroy(spriteRenderer);
             Destroy(this.GetComponent<Collider2D>());
             exploder.Emit(30);
+            source.PlayOneShot(particleExplodeClip);
             
             yield return new WaitForSeconds(_delay);
             Destroy(this.gameObject);

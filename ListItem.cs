@@ -13,6 +13,7 @@ namespace LoneX.TchilaVirus
         public TMP_Text playerCount;
         public TMP_Text maxPlayers;
         public TMP_Text isPrivate;
+        public static ListItem selectedItem;
         #endregion
 
         #region PrivateAtt
@@ -25,6 +26,10 @@ namespace LoneX.TchilaVirus
         #endregion
 
         #region PublicMeths
+        public void OnItemSelected()
+        {
+            selectedItem = this;
+        }
         public void InitItem(string _host, string _mapName , string _playerCount , string _maxPlayers , bool _isPrivate)
         {
             host.text = _host;

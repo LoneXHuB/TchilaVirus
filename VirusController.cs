@@ -20,11 +20,13 @@ namespace LoneX.TchilaVirus
         public bool isDouble = false;
         private GameObject virusDouble;
         public GameObject virusDoublePrefab;
-
+        public GameObject WhiteLight;
         private void Awake()
         {
             if (photonView.IsMine && ! isAI)
                 CineCamera.instance.Follow(this.transform);
+            if(!photonView.IsMine)
+                GameObject.Destroy(WhiteLight);
         }
 
         private void Update()

@@ -10,7 +10,7 @@ namespace LoneX.TchilaVirus
         public GameObject spriteShape;
         public GameObject internals;
 
-        public Animator deathAnimator;
+        public Animator animator;
         public AudioSource audioSource;
         public AudioClip deathClip;
 
@@ -18,7 +18,7 @@ namespace LoneX.TchilaVirus
         {
             spriteShape.SetActive(false);
             internals.SetActive(false);
-            deathAnimator.SetTrigger("Die");
+            animator.SetTrigger("Die");
             PlaySound(deathClip);
             
             if(!isDouble)
@@ -30,7 +30,24 @@ namespace LoneX.TchilaVirus
 
         public void Shoot()
         {
-            //TODO : implement shoot animation
+           animator.SetTrigger("GlowOnce");
+        }
+        public void Glow()
+        {
+            animator.SetTrigger("Glow");
+        }
+        public void StopGlow()
+        {
+            animator.SetTrigger("StopGlow");
+        }
+        public void GlowOnce()
+        {
+            animator.SetTrigger("GlowOnce");
+        }
+        
+        public void SetShield(bool _isImmune)
+        {
+            animator.SetBool("Immune" , _isImmune);
         }
 
         public void PlaySound(AudioClip _clip)

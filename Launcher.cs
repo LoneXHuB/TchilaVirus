@@ -20,7 +20,7 @@ namespace LoneX.TchilaVirus
         [Tooltip("The maximum number of players per room. When a room is full, it can't be joined by new players, and so new room will be created")]
         [SerializeField]
         private byte maxPlayersPerRoom = 10;
-        public List<ListItem> items;
+        public List<ListItem> items = new List<ListItem>();
         public Toggle isPrivateRoom;
         private GameMode gameMode;
         public ListItem ItemTemplate;
@@ -94,6 +94,27 @@ namespace LoneX.TchilaVirus
                     // #Critical, we must first and foremost connect to Photon Online Server.
                     Connect();
                 }
+            }
+            public void JoinRoom(int _team)
+            {
+                gameMode = GameMode.Join;
+                if(ListItem.selectedItem == null)
+                {
+                    ShowMessage("Oops!", "This room does not exist anymore...");
+                    return;
+                }
+                string _roomName = ListItem.selectedItem.host.text;
+                Hashtable teamProp = new Hashtable
+                {
+                    {TEAM_KEY, (Team)_team }
+                };
+                
+                PhotonNetwork.LocalPlayer.SetCustomProperties(teamProp);
+
+                if(PhotonNetwork.IsConnected)
+                {
+                    PhotonNetwork.JoinRoom(_roomName);
+                }  
             }
             public void CreateGame(int _team)
             {
@@ -179,6 +200,12 @@ namespace LoneX.TchilaVirus
                 isConnecting = false;
             }
         }
+        public override void OnJoinRoomFailed(short returnCode, string message)
+        {
+            ShowMessage("Oops !" , returnCode +"\n"+ message);
+            connectingPanel.SetActive(false);
+            ReturnToMainMenu();
+        }
         public override void OnJoinRandomFailed(short returnCode, string message)
         {
             Debug.Log("Join failed, creating room...");
@@ -226,8 +253,8 @@ namespace LoneX.TchilaVirus
                 if(_room.IsOpen == isPrivateRoom.isOn)
                     continue;
 
-                GameObject _itemGameObject = Instantiate(ItemTemplate.gameObject , scrollViewContent);
-                _itemGameObject.GetComponent<ListItem>();
+               
+               
 
                 if(_room.RemovedFromList)
                 {
@@ -238,10 +265,14 @@ namespace LoneX.TchilaVirus
                         continue;
                     }
                 }
-
-                ListItem _item = _itemGameObject.GetComponent<ListItem>();
-                _item.InitItem(_room.Name , _room.CustomProperties[MAP_NAME_KEY].ToString() , _room.PlayerCount.ToString() , _room.MaxPlayers.ToString() , _room.IsOpen);
-                items.Add(_item);
+                else 
+                {
+                    GameObject _itemGameObject = Instantiate(ItemTemplate.gameObject , scrollViewContent);
+                    ListItem _item = _itemGameObject.GetComponent<ListItem>();
+                    _item.InitItem(_room.Name , _room.CustomProperties[MAP_NAME_KEY].ToString() , _room.PlayerCount.ToString() , _room.MaxPlayers.ToString() , _room.IsOpen);
+                    items.Add(_item);
+                }
+               
             }
         }
         #endregion

@@ -10,7 +10,8 @@ namespace LoneX.TchilaVirus
         private Rigidbody2D rigid; 
         private Animator animator;
         public Animator minimapTagAnimator;
-
+        public AudioSource source;
+        public AudioClip activatedClip;
         public bool isActivated;
         private void Start()
         {
@@ -54,6 +55,7 @@ namespace LoneX.TchilaVirus
             minimapTagAnimator.SetTrigger("Activated");
             isActivated = true;
             GameManager.instance.UpdateScore();
+            source.PlayOneShot(activatedClip);
 
             int _index = this.transform.GetSiblingIndex();
             GeneralAI.activatedShields[GameManager.instance.score - 1] = _index;
